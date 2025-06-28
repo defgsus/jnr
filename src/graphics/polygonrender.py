@@ -2,6 +2,7 @@ from typing import List, Dict, Optional, Union, Tuple
 
 from scipy.spatial import Delaunay
 
+from .style import Style
 from .graphobject import *
 from .vertexarray import VertexArray
 from ..assets import assets
@@ -14,18 +15,18 @@ class PolygonRender(GraphObject):
     def __init__(
             self,
             polygon: Union[Polygon, Circle],
-            texture: Optional[str] = None,
+            style: Optional[Style] = None,
     ):
         super().__init__()
         self.polygon = polygon
-        self.texture_filename = texture
+        self.style = style or Style()
 
     def initialize(self):
         vertices = self.triangulate()
         self.vao = VertexArray(
             vertices,
             attributes={
-                **({"uv": self.get_uv_choords(vertices)} if self.texture_filename else {})
+                **({"uv": self.get_uv_choords(vertices)} if self.style.has_texture else {})
             },
             vertex_source="""
             #version 330 core
@@ -46,26 +47,25 @@ class PolygonRender(GraphObject):
             #version 330 core
             #line 47
             
-            #define COLOR {1 if self.texture_filename else 0}
+            #define COLOR {1 if self.style.has_texture else 0}
             
             uniform sampler2D u_texture;
-            layout (location = 0) out vec4 out_color;
+            uniform vec4 u_uv_scale_offset;
             in vec2 v_uv;
+            layout (location = 0) out vec4 out_color;
             
             void main() {{
             #if COLOR == 0
                 out_color = vec4(.5, .5, .2, 1.);
             #elif COLOR == 1
-                out_color = texture(u_texture, v_uv);
+                vec2 uv = v_uv * u_uv_scale_offset.xy + u_uv_scale_offset.zw;
+                out_color = texture(u_texture, uv);
             #endif
             }}
             """
         )
-        if self.texture_filename:
-            image = assets.get_image(self.texture_filename)
-            self.texture = self.gl.texture(image.size, 4, image.tobytes())
-            self.sampler = self.gl.sampler(texture=self.texture)
-            self.sampler.filter = (self.gl.LINEAR, self.gl.LINEAR)
+        if self.style.has_texture:
+            self.sampler = self.style.to_texture_sampler(self.gl)
 
     def render(self, rs: RenderSettings):
         pos = self.polygon.position
@@ -73,11 +73,17 @@ class PolygonRender(GraphObject):
         trans = pyrr.matrix44.create_from_translation((*pos, 0))
         rot = pyrr.matrix44.create_from_z_rotation(-self.polygon.body.angle)
         trans = pyrr.matrix44.multiply(rot, trans)
-        if self.texture_filename:
-            self.sampler.use()
-        self.vao.render(rs, uniforms={
+
+        uniforms = {
             "u_transformation": trans.flatten().astype("f4"),
-        })
+        }
+        if self.style.has_texture:
+            self.sampler.use()
+
+            if self.style.tileset:
+                uniforms.update(self.style.tileset_controller.uniforms())
+
+        self.vao.render(rs, uniforms=uniforms)
 
     def triangulate(self):
         if isinstance(self.polygon, Circle):

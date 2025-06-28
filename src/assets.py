@@ -3,11 +3,16 @@ from typing import Dict, Any, Union
 
 import PIL.Image
 
+from src.graphics.tiledtileset import TiledTileset
 from src.maps.tiled import TiledMap
 
+
+ASSET_PATH = Path(__file__).resolve().parent.parent / "assets"
+
 SEARCH_PATHS = [
-    Path(__file__).resolve().parent.parent / "assets",
+    ASSET_PATH,
 ]
+
 
 class Assets:
 
@@ -30,7 +35,11 @@ class Assets:
         filename = Path(filename)
         full_filename = self.get_asset_filename(filename)
         if full_filename not in self._files:
-            image = PIL.Image.open(full_filename).transpose(PIL.Image.Transpose.FLIP_TOP_BOTTOM).convert("RGBA")
+            image = (
+                PIL.Image.open(full_filename)
+                .transpose(PIL.Image.Transpose.FLIP_TOP_BOTTOM)
+                .convert("RGBA")
+            )
             self._files[full_filename] = image
             self._files[filename] = image
         return self._files[full_filename]
@@ -42,6 +51,15 @@ class Assets:
             map = TiledMap(full_filename)
             self._files[full_filename] = map
             self._files[filename] = map
+        return self._files[full_filename]
+
+    def get_tiled_tileset(self, filename: Union[str, Path]) -> TiledMap:
+        filename = Path(filename)
+        full_filename = self.get_asset_filename(filename)
+        if full_filename not in self._files:
+            tileset = TiledTileset.open(full_filename)
+            self._files[full_filename] = tileset
+            self._files[filename] = tileset
         return self._files[full_filename]
 
 

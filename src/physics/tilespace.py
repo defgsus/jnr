@@ -33,5 +33,6 @@ class TileSpace(SpaceObject):
                             (wx+0*S, wy+1*S),
                         ]
                     )
+                    shape.friction = 1.
                     self.space.add(shape)
 

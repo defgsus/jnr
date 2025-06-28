@@ -3,9 +3,10 @@ from typing import List, Tuple, Optional, Union
 import pymunk
 import numpy as np
 
-from src.graphics import RenderSettings
+from src.graphics import RenderSettings, TiledTileset
 from .space import Space
 from .spaceobject import SpaceObject
+from ..graphics.style import Style
 
 
 class Polygon(SpaceObject):
@@ -15,13 +16,13 @@ class Polygon(SpaceObject):
             vertices: List[Tuple[float, float]],
             static: bool = False,
             position: Tuple[float, float] = (0, 0),
-            texture: Optional[str] = None,
+            style: Optional[Style] = None,
     ):
         super().__init__()
         self.vertices = vertices
         self.static = static
         self.initial_position = position
-        self.texture_filename = texture
+        self.style = style
 
     @property
     def position(self) -> pymunk.Vec2d:
@@ -49,4 +50,4 @@ class Polygon(SpaceObject):
 
     def create_graph_object(self):
         from ..graphics.polygonrender import PolygonRender
-        return PolygonRender(self, texture=self.texture_filename)
+        return PolygonRender(self, style=self.style)
