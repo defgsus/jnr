@@ -17,7 +17,12 @@ class RenderSettings:
             shader["u_time"].write(self.second)
         if "u_dt" in shader:
             shader["u_dt"].write(self.dt)
-        if "u_transformation" in shader:
-            shader["u_transformation"].write(self.transformation.flatten().astype("f4"))
+        if "u_world_transformation" in shader:
+            shader["u_world_transformation"].write(self.transformation.flatten().astype("f4"))
         if "u_projection" in shader:
             shader["u_projection"].write(self.projection.flatten().astype("f4"))
+
+    def init_gl_state(self):
+        self.gl.enable(self.gl.DEPTH_TEST)
+        self.gl.enable(self.gl.BLEND)
+        #self.gl.(self.gl.ONE_MINUS_SRC_ALPHA)

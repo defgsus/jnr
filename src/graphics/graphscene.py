@@ -2,7 +2,7 @@ from typing import List, Dict, Optional, Union
 
 import moderngl
 
-from . import RenderSettings
+from .rendersettings import RenderSettings
 from .graphobject import GraphObject
 
 
@@ -23,6 +23,7 @@ class GraphScene:
                 self.is_initialized.pop(obj)
 
     def render(self, rs: RenderSettings):
+        rs.init_gl_state()
         for obj in self.objects:
             if obj not in self.is_initialized:
                 obj._initialize(rs.gl)

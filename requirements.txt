@@ -1,3 +1,7 @@
 moderngl
+pillow
 pygame
+pymunk
 pyrr
+scipy
+
