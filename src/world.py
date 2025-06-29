@@ -49,7 +49,6 @@ class World:
                 positions = []
                 for i in range(10):
                     positions.append([obj.x, obj.y - i/5])
-                print("STRING", positions)
                 self.physics.add(physics.String(positions))
 
         self.physics.add(self.player)
@@ -114,12 +113,12 @@ class World:
         self.scale += v * (self.target_scale - self.scale)
         self.physics.step(rs)
 
-        t = np.linspace(0, 2*np.pi, self.demo_sprites.num_sprites)
-        #self.demo_sprites.locations[:, 0] = np.sin(t+rs.second) * 10
-        #self.demo_sprites.locations[:, 1] = np.cos(t+rs.second*.618) * 10
-        #self.demo_sprites.rotations = np.sin(t+rs.second)
-
-        #self.demo_sprites.locations = np.random.rand(self.demo_sprites.num_sprites, 2) * 20
+        if hasattr(self, "demo_sprites"):
+            t = np.linspace(0, 2*np.pi, self.demo_sprites.num_sprites)
+            self.demo_sprites.locations[:, 0] = np.sin(t+rs.second) * 10
+            self.demo_sprites.locations[:, 1] = np.cos(t+rs.second*.618) * 10
+            self.demo_sprites.rotations = np.sin(t+rs.second)
+            # self.demo_sprites.locations = np.random.rand(self.demo_sprites.num_sprites, 2) * 20
 
     def render(self, rs: graphics.RenderSettings):
         self.gl.clear(0, 0, 0)

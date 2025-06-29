@@ -131,7 +131,8 @@ class MultiSpriteRender(GraphObject):
                 uniforms.update(self.style.tileset_controller.uniforms())
 
         self.sprite_vbo.write(self._sprite_data.astype("f4").tobytes())
-        self.vao.initialize(self.gl)
+        if self.vao.gl is None:
+            self.vao.initialize(self.gl)
         self.vao.vao.bind(
             attribute=3, cls="f", buffer=self.sprite_vbo,
             fmt="4f",

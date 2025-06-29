@@ -29,6 +29,7 @@ class VertexArray:
         self.vertex_source = vertex_source
         self.fragment_source = fragment_source
         self.attributes: Dict[str, np.ndarray] = {}
+        self.gl: Optional[moderngl.Context] = None
         self.vbos: Dict[str, moderngl.Buffer] = {}
         self.vao: Optional[moderngl.VertexArray] = None
         self.program: Optional[moderngl.Program] = None

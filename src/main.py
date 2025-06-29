@@ -1,3 +1,6 @@
+import argparse
+import tracemalloc
+
 import pygame
 import moderngl
 import pyrr
@@ -20,23 +23,43 @@ class Main:
         self.dt = 0.
         self.world = World(self.screen)
 
-    def run(self):
-        try:
-            self.running = True
-            while self.running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.running = False
-                    else:
-                        self.handle_event(event)
+    @classmethod
+    def parse_args(cls) -> dict:
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            "-tm", "--trace-malloc", type=bool, nargs="?", default=False, const=True,
+        )
+        return vars(parser.parse_args())
 
-                self.dt = self.clock.tick(60) / 1000
-                self.second = pygame.time.get_ticks() / 1000.0 - self.start_tick
-                rs = self.world.rendersettings(self.dt, self.second)
-                self.world.step(rs)
-                self.world.render(rs)
+    def run(self, **kwargs):
+        try:
+            if kwargs["trace_malloc"]:
+                tracemalloc.start(5)
+
+            self._main_loop()
+
+            if kwargs["trace_malloc"]:
+                snapshot = tracemalloc.take_snapshot()
+                print("--- trace-malloc ----")
+                for i, stat in enumerate(snapshot.statistics("lineno")[:20]):
+                    print(f"{i:2}: {stat}")
         finally:
             pygame.quit()
+
+    def _main_loop(self):
+        self.running = True
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                else:
+                    self.handle_event(event)
+
+            self.dt = self.clock.tick(60) / 1000
+            self.second = pygame.time.get_ticks() / 1000.0 - self.start_tick
+            rs = self.world.rendersettings(self.dt, self.second)
+            self.world.step(rs)
+            self.world.render(rs)
 
     def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.KEYUP:
