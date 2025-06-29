@@ -4,6 +4,7 @@ import pymunk
 import numpy as np
 
 from src.graphics.rendersettings import RenderSettings
+from .shapesettings import ShapeSettings
 from .space import Space
 from .spaceobject import SpaceObject
 from ..graphics.style import Style
@@ -14,11 +15,13 @@ class String(SpaceObject):
     def __init__(
             self,
             positions: Union[List[List[float]], np.ndarray],
+            shape_settings: Optional[ShapeSettings] = None,
             style: Optional[Style] = None,
+            name: Optional[str] = None,
     ):
         from src.graphics import MultiSpriteRender
 
-        super().__init__()
+        super().__init__(shape_settings=shape_settings, style=style, name=name)
         self.init_positions = positions
         self.style = style
         self.bodies: List[pymunk.Body] = []
@@ -26,14 +29,11 @@ class String(SpaceObject):
         self.sprite_render: Optional[MultiSpriteRender] = None
 
     def add_to_space(self):
-        mass = 1
         for pos in self.init_positions:
             body = pymunk.Body()
             body.position = pymunk.Vec2d(*pos) * Space.S
             shape = pymunk.Circle(body, radius=0.1 * Space.S)
-            shape.friction = 1.
-            shape.density = 1
-            shape.mass = mass
+            self.shape_settings.apply_to_shape(shape)
             self.bodies.append(body)
             self.shapes.append(shape)
 

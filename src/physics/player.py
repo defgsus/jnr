@@ -31,11 +31,11 @@ class Player(Polygon):
             style=Style(
                 tileset_filename="character-hero-ars-notoria-8x4-46x50.tsx",
                 # show_rotation=False,
-                scale=pymunk.Vec2d(50/20, 1.) * 1.1,
+                scale=pymunk.Vec2d(50/20, 1.) * 1.2,
             ),
             shape_settings=ShapeSettings(
                 friction=10.,
-                mass=1,
+                mass=5,
                 density=10,
                 filter=pymunk.ShapeFilter(
                     categories=Space.CAT_PLAYER,
@@ -43,10 +43,15 @@ class Player(Polygon):
                 )
             ),
         )
+        self.jump_power = 150.
+        self.hit_power = 20.
         self.sprite_select = ValueScheduler("stand")
         self.jump_threshold = TimeThreshold(max_seconds_active=.2)
         self.hit_threshold = TimeThreshold(max_seconds_active=.2)
+        #self.motion_key_threshold = TimeThreshold(max_seconds_active=1)
         self.on_ground: bool = False
+        self.is_running: bool = False
+        self.run_phase: float = 0.
 
     def step(self, rs: RenderSettings):
         world_hit_point = self.body.position + pymunk.Vec2d(.0, -.75) * self.space.S
@@ -66,7 +71,7 @@ class Player(Polygon):
                 self.sprite_select.schedule("jump1", 0)
                 self.sprite_select.schedule("jump2", 0.5)
                 self.body.apply_impulse_at_world_point(
-                    (0, 50*self.shape_settings.mass),
+                    (0, self.jump_power*self.shape_settings.mass),
                     self.body.position,
                 )
 
@@ -76,6 +81,11 @@ class Player(Polygon):
             self.sprite_select.schedule("hit3", 0.2)
             self.sprite_select.schedule("stand", 0.3)
             self.hit(dir_x=-1 if self.style.tileset_controller.flip_x else 1)
+
+        if self.on_ground and (keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]):
+            self.is_running = True
+        else:
+            self.is_running = False
 
         mapping = {
             # pygame.K_UP: (0, 1),
@@ -102,16 +112,27 @@ class Player(Polygon):
             sprite = "jump2"
         elif "jump" in sprite and self.on_ground:
             sprite = "stand"
+        if self.is_running and sprite == "stand":
+            self.run_phase += rs.dt * (1 + self.body.velocity.length/7)
+            frame = int(self.run_phase) % 8 + 1
+            sprite = f"run{frame}"
         self.style.tileset_controller.set_type(sprite)
 
-        self.body.angular_velocity += rs.dt * self.body.angle * -10
-        self.body.angle = max(-.01, min(0.01, self.body.angle))
+        #self.body.angular_velocity += rs.dt * self.body.angle * -10
+        #self.body.angle = max(-.01, min(0.01, self.body.angle))
+        self.body.angle = 0
+        max_v = 100
+        v = self.body.velocity
+        self.body.velocity = (
+            max(-max_v, min(max_v, v[0])),
+            max(-max_v, min(max_v*5, v[1])),
+        )
 
     def hit(self, dir_x: float):
         world_hit_point = self.body.position + pymunk.Vec2d(dir_x * .3, .0) * self.space.S
         result = self.space.space.point_query(
             point=world_hit_point,
-            max_distance=self.space.S,
+            max_distance=self.space.S / 2.,
             shape_filter=pymunk.ShapeFilter(
                 mask=0b100,
             )
@@ -122,10 +143,10 @@ class Player(Polygon):
                 print(r.shape.filter, r.shape)
                 r.shape.body.apply_impulse_at_world_point(
                     point=world_hit_point,
-                    impulse=(dir_x * 50, 0),
+                    impulse=(dir_x * self.hit_power, 0),
                 )
 
     def create_graph_objects(self):
         from ..graphics.polygonrender import PolygonRender
-        yield PolygonRender(self)
+        # yield PolygonRender(self)
         yield from super().create_graph_objects()

@@ -49,7 +49,12 @@ class World:
                 positions = []
                 for i in range(10):
                     positions.append([obj.x, obj.y - i/5])
-                self.physics.add(physics.String(positions))
+                self.physics.add(physics.String(
+                    positions,
+                    shape_settings=ShapeSettings(
+                        mass=0.3,
+                    )
+                ))
 
         self.physics.add(self.player)
         for i in range(50):

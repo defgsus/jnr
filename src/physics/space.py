@@ -19,7 +19,7 @@ class Space:
 
     def __init__(self):
         self.space = pymunk.Space(threaded=True)
-        self.space.gravity = 0, -140
+        self.space.gravity = 0, -300
         self.space.damping = 1
         self.space.iterations = 30
         self.objects: List[SpaceObject] = []
@@ -47,7 +47,7 @@ class Space:
         x, y = pos
         x *= self.S
         y *= self.S
-        print("QUERY", (x, y))
+
         return self.space.point_query(
             (x, y),
             max_distance=0.,

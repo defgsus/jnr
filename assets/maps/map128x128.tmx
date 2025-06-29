@@ -140,7 +140,7 @@
   <object id="1" type="string" x="455.333" y="1790.33">
    <point/>
   </object>
-  <object id="2" type="player" x="249" y="2003.67">
+  <object id="2" type="player" x="345.667" y="1830.67">
    <point/>
   </object>
   <object id="3" type="rect" x="416" y="1969" width="63.3333" height="31.3333"/>
