@@ -16,21 +16,26 @@ class Polygon(SpaceObject):
             vertices: List[Tuple[float, float]],
             static: bool = False,
             position: Tuple[float, float] = (0, 0),
+            shape_filter: Optional[pymunk.ShapeFilter] = None,
             style: Optional[Style] = None,
     ):
         super().__init__()
+        if static and shape_filter is None:
+            shape_filter = pymunk.ShapeFilter(
+                categories=Space.CAT_STATIC,
+                mask=pymunk.ShapeFilter.ALL_MASKS(),
+            )
         self.vertices = vertices
         self.static = static
         self.initial_position = position
+        self.initial_shape_filter = shape_filter
         self.style = style
 
     @property
     def position(self) -> pymunk.Vec2d:
         return self.body.position / Space.S
 
-    def add_to_space(self, space: pymunk.Space):
-        self.space = space
-
+    def add_to_space(self):
         mass = 1
         self.body = pymunk.Body(
             #mass=mass,
@@ -42,8 +47,10 @@ class Polygon(SpaceObject):
         shape.friction = 1.
         shape.density = 1
         shape.mass = mass
+        if self.initial_shape_filter:
+            shape.filter = self.initial_shape_filter
 
-        self.space.add(self.body, shape)
+        self.space.space.add(self.body, shape)
 
     def step(self, rs: RenderSettings):
         pass #print(self.__class__.__name__, self.body.position)

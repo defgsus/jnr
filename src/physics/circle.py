@@ -25,9 +25,7 @@ class Circle(SpaceObject):
     def position(self) -> pymunk.Vec2d:
         return self.body.position / Space.S
 
-    def add_to_space(self, space: pymunk.Space):
-        self.space = space
-
+    def add_to_space(self):
         mass = 1
         self.body = pymunk.Body(
             body_type=pymunk.Body.STATIC if self.static else pymunk.Body.DYNAMIC,
@@ -38,7 +36,7 @@ class Circle(SpaceObject):
         shape.density = 3
         shape.mass = mass
 
-        self.space.add(self.body, shape)
+        self.space.space.add(self.body, shape)
 
     def step(self, rs: RenderSettings):
         pass

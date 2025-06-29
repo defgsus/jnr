@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 import pygame
 import moderngl
@@ -12,7 +13,8 @@ from src.graphics import Style
 
 class World:
 
-    def __init__(self):
+    def __init__(self, screen: pygame.Surface):
+        self.screen = screen
         self.physics = physics.Space()
         self.graph_scene = graphics.GraphScene()
         self.gl = moderngl.get_context()
@@ -23,12 +25,30 @@ class World:
         self.target_scale = 2.
 
         self.demo_map = assets.get_tiled_map("maps/map128x128.json")
-        self.physics.add(physics.TileSpace(self.demo_map.layer(0)))
+        self.physics.add(physics.TileSpace(self.demo_map.layers[0]))
 
-        self.player = physics.Player(position=(22, 10))
+        for obj in self.demo_map.layers[1].objects:
+            if obj.type == "player":
+                self.player = physics.Player(position=(obj.x, obj.y))
+            elif obj.type == "rect":
+                self.physics.add(physics.Polygon(
+                    [
+                        (obj.x, obj.y),
+                        (obj.x, obj.y - obj.height),
+                        (obj.x + obj.width, obj.y - obj.height),
+                        (obj.x + obj.width, obj.y),
+                    ],
+                    static=True,
+                ))
+            elif obj.type == "string":
+                positions = []
+                for i in range(10):
+                    positions.append([obj.x, obj.y - i/5])
+                print("STRING", positions)
+                self.physics.add(physics.String(positions))
 
         self.physics.add(self.player)
-        for i in range(100):
+        for i in range(20):
             self.physics.add(physics.Circle(
                 radius=random.uniform(0.1, .7),
                 position=(4+i%4, 20+i//4))
@@ -48,7 +68,7 @@ class World:
             graphics.ScreenQuad(z=1000, texture_filename="texture/background/mountains4x1.png")
         )
         self.graph_scene.add(graphics.TileRender(
-            map=self.demo_map.layer(0),
+            map=self.demo_map.layers[0],
             texture="texture/tileset2x2.png",
             num_tiles=(2, 2),
         ))
@@ -111,4 +131,19 @@ class World:
                 pyrr.matrix44.create_orthogonal_projection(-scale*x_scale, scale*x_scale, -scale, scale, 1, -1000),
             gl=self.gl,
         )
+
+    def screen_pos_to_map_pos(self, pos: Tuple[float, float]) -> Tuple[float, float]:
+        rs = self.rendersettings(0.1, 0)
+        device_pos = pyrr.Vector4([
+            pos[0] / self.screen.get_width() * 2. - 1.,
+            pos[1] / self.screen.get_height() * -2. + 1.,
+            0,
+            1
+        ])
+        trans = pyrr.matrix44.inverse(rs.projection)
+        p = pyrr.matrix44.apply_to_vector(trans, device_pos)
+        p = (p[0].item(), p[1].item())
+        map_pos = (p[0] + self.translation[0].item(), p[1] + self.translation[1].item())
+        # print(f"S {pos}\n-> device {device_pos}\n->projec {p}\n->mappos {map_pos}")
+        return map_pos
 

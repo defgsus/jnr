@@ -14,10 +14,10 @@ class TileSpace(SpaceObject):
         super().__init__()
         self.map = map
 
-    def add_to_space(self, space: pymunk.Space):
-        self.space = space
+    def add_to_space(self):
         S = Space.S
 
+        shapes = []
         grid = self.map.to_numpy()
         for y, row in enumerate(grid):
             wy = y * S
@@ -25,7 +25,7 @@ class TileSpace(SpaceObject):
                 wx = x * S
                 if v:
                     shape = pymunk.Poly(
-                        self.space.static_body,
+                        self.space.space.static_body,
                         [
                             (wx+0*S, wy+0*S),
                             (wx+1*S, wy+0*S),
@@ -34,5 +34,12 @@ class TileSpace(SpaceObject):
                         ]
                     )
                     shape.friction = 1.
-                    self.space.add(shape)
+                    shape.filter = pymunk.ShapeFilter(
+                        categories=Space.CAT_STATIC,
+                        mask=pymunk.ShapeFilter.ALL_MASKS(),
+                    )
+                    # print(shape.filter)
+                    shapes.append(shape)
+
+        self.space.space.add(*shapes)
 

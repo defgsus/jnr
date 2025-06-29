@@ -10,7 +10,8 @@ class SpaceObject:
     def __init__(
             self,
     ):
-        self.space: Optional[pymunk.Space] = None
+        from .space import Space
+        self.space: Optional[Space] = None
 
     @property
     def position(self) -> pymunk.Vec2d:
@@ -22,7 +23,7 @@ class SpaceObject:
     def create_graph_object(self):
         return None
 
-    def add_to_space(self, space: pymunk.Space):
+    def add_to_space(self):
         raise NotImplementedError
 
 

@@ -1,3 +1,5 @@
+import pymunk
+
 from .spaceobject import *
 from .polygon import Polygon
 
@@ -5,6 +7,7 @@ import pygame
 
 from ..graphics import Style
 from ..timings import ValueScheduler, TimeThreshold
+from .space import Space
 
 
 class Player(Polygon):
@@ -19,6 +22,10 @@ class Player(Polygon):
             vertices=[(-w, -h), (w, -h), (w, h), (-w, h)],
             position=position,
             style=Style(tileset_filename="character-hero-ars-notoria-8x4-46x50.tsx"),
+            shape_filter=pymunk.ShapeFilter(
+                categories=Space.CAT_PLAYER,
+                mask=pymunk.ShapeFilter.ALL_MASKS(),
+            )
         )
         self.sprite_select = ValueScheduler("stand")
         self.jump_threshold = TimeThreshold(max_seconds_active=.2)
@@ -66,4 +73,5 @@ class Player(Polygon):
 
         self.sprite_select.step(rs)
         self.style.tileset_controller.set_type(self.sprite_select.value)
-        self.body.angular_velocity += rs.dt * self.body.angle * -10
+        
+        #self.body.angular_velocity += rs.dt * self.body.angle * -10

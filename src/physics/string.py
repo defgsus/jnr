@@ -16,42 +16,83 @@ class String(SpaceObject):
             positions: Union[List[List[float]], np.ndarray],
             style: Optional[Style] = None,
     ):
+        from src.graphics import MultiSpriteRender
+
         super().__init__()
         self.init_positions = positions
         self.style = style
         self.bodies: List[pymunk.Body] = []
         self.shapes: List[pymunk.Shape] = []
+        self.sprite_render: Optional[MultiSpriteRender] = None
 
-    def add_to_space(self, space: pymunk.Space):
-        self.space = space
-
+    def add_to_space(self):
         mass = 1
         for pos in self.init_positions:
             body = pymunk.Body()
             body.position = pymunk.Vec2d(*pos) * Space.S
-            shape = pymunk.Circle(body, radius=0.01)
+            shape = pymunk.Circle(body, radius=0.1 * Space.S)
             shape.friction = 1.
             shape.density = 1
             shape.mass = mass
             self.bodies.append(body)
             self.shapes.append(shape)
 
-        constraints = [
-            pymunk.PinJoint()
-        ]
+        query_pos = self.init_positions[0]
+        query_pos = pymunk.Vec2d(
+            int(query_pos[0]) + .5,
+            int(query_pos[1]),
+        ) * Space.S
+        query_results = self.space.space.point_query(
+            query_pos,
+            max_distance=.5,
+            shape_filter=pymunk.ShapeFilter(
+                categories=Space.CAT_STATIC,
+                mask=pymunk.ShapeFilter.ALL_MASKS(),
+            )
+        )
+        constraints = []
+        if not query_results:
+            raise ValueError(f"String did not find something to attach at {self.init_positions[0]}")
+
+        constraints.append(
+            pymunk.PinJoint(
+                query_results[0].shape.body, self.bodies[0],
+                #(0.5, 0),
+                query_results[0].shape.body.world_to_local(query_pos),
+                (0, 0),
+            )
+        )
         for body, next_body in zip(self.bodies, self.bodies[1:]):
             con = pymunk.DampedSpring(
                 body, next_body,
                 (0, 0), (0, 0),
                 rest_length=body.position.get_distance(next_body.position),
+                stiffness=500.,
+                damping=10.,
             )
             constraints.append(con)
 
-        self.space.add(*self.bodies, *self.shapes, *constraints)
+        self.space.space.add(*self.bodies, *self.shapes, *constraints)
 
     def step(self, rs: RenderSettings):
-        pass #print(self.__class__.__name__, self.body.position)
+        if self.sprite_render:
+            self.sprite_render.locations = [
+                body.position / self.space.S
+                for body in self.bodies
+            ]
+            self.sprite_render.scales = [
+                shape.radius / self.space.S
+                for shape in self.shapes
+            ]
+            #print("BODY", self.bodies[0].position)
+            #print(self.sprite_render.locations)
 
-    #def create_graph_object(self):
-        #from ..graphics.polygonrender import PolygonRender
-        #return PolygonRender(self, style=self.style)
+    def create_graph_object(self):
+        from ..graphics import MultiSpriteRender
+        self.sprite_render = MultiSpriteRender(
+            num_sprites=len(self.init_positions),
+            #style=Style(texture_filename="texture/tileset2x2.png"),
+        )
+        return self.sprite_render
+
+

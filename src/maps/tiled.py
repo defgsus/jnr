@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 
 import numpy as np
+
 
 class TiledMapObject:
 
@@ -10,17 +11,25 @@ class TiledMapObject:
         self.layer = layer
         self.map = layer.map
         self.id = data["id"]
-        self.x = data["x"]
-        self.y = data["y"]
-        self.draw_order = data["draworder"]
-        self.map_x = self.x / self.map.width
-        self.map_y = self.y / self.map.height
+        self.pixel_x = data["x"]
+        self.pixel_y = data["y"]
+        self.pixel_width = data["width"]
+        self.pixel_height = data["height"]
+        self.type = data["type"]
+        self.x = self.pixel_x / self.map.tile_width
+        self.y = self.pixel_y / self.map.tile_height
+        if "-up" in self.map.render_order:
+            self.y = self.map.height - self.y
+        self.width = self.pixel_width / self.map.tile_width
+        self.height = self.pixel_height / self.map.tile_height
+
 
 class TiledMapLayer:
 
     def __init__(self, map: "TiledMap", index: int):
         self.map = map
         self.index = index
+        self._objects: List[TiledMapObject] = None
 
     @property
     def data(self):
@@ -40,7 +49,7 @@ class TiledMapLayer:
 
     @property
     def render_order(self) -> str:
-        return self.map.data["renderorder"]
+        return self.map.render_order
 
     def to_numpy(self) -> np.ndarray[np.int_]:
         array = np.array(self.data["data"], dtype=np.int_)
@@ -48,6 +57,15 @@ class TiledMapLayer:
         if "-up" in self.render_order:
             array = array[::-1].copy()
         return array
+
+    @property
+    def objects(self) -> List[TiledMapObject]:
+        if self._objects is None:
+            self._objects = []
+            if self.data.get("objects"):
+                for obj in self.data["objects"]:
+                    self._objects.append(TiledMapObject(self, obj))
+        return self._objects
 
 
 class TiledMap:
@@ -58,23 +76,24 @@ class TiledMap:
     ):
         self.filename = Path(filename)
         self.data = json.loads(self.filename.read_text())
+        self._layers: List[TiledMapLayer] = None
+
+        self.render_order: str = self.data["renderorder"]
+        self.width: int = self.data["width"]
+        self.height: int = self.data["height"]
+        self.size = (self.width, self.height)
+        self.tile_width: int = self.data["tilewidth"]
+        self.tile_height: int = self.data["tileheight"]
+        self.tile_size = (self.tile_width, self.tile_height)
+        self.pixel_width: int = self.data["width"] * self.tile_width
+        self.pixel_height: int = self.data["height"] * self.tile_height
+        self.pixel_size = (self.pixel_width, self.pixel_height)
 
     @property
-    def width(self) -> int:
-        return self.data["width"]
-
-    @property
-    def height(self) -> int:
-        return self.data["height"]
-
-    @property
-    def size(self) -> Tuple[int, int]:
-        return self.data["width"], self.data["height"]
-
-    @property
-    def num_layers(self) -> int:
-        return len(self.data["layers"])
-
-    def layer(self, index: int) -> TiledMapLayer:
-        return TiledMapLayer(self, index)
+    def layers(self):
+        if self._layers is None:
+            self._layers = []
+            for i, l in enumerate(self.data["layers"]):
+                self._layers.append(TiledMapLayer(self, i))
+        return self._layers
 

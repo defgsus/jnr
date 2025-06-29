@@ -18,7 +18,7 @@ class Main:
         self.running = False
         self.start_tick = pygame.time.get_ticks() / 1000.
         self.dt = 0.
-        self.world = World()
+        self.world = World(self.screen)
 
     def run(self):
         try:
@@ -44,3 +44,9 @@ class Main:
                 self.running = False
             elif event.key == pygame.K_f:
                 pygame.display.toggle_fullscreen()
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            #print(event)
+            map_pos = self.world.screen_pos_to_map_pos(event.dict["pos"])
+            s = self.world.physics.get_shape_at(map_pos)
+            print("S", s)

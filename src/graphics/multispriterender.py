@@ -58,15 +58,19 @@ class MultiSpriteRender(GraphObject):
                     -1, 1, 0,
                     1, 1, 0,
                 ]).reshape(-1, 3),
-                "uv": np.array([
-                    0, 0,
-                    1, 0,
-                    1, 1,
+                **(
+                    {"uv": np.array([
+                        0, 0,
+                        1, 0,
+                        1, 1,
 
-                    0, 0,
-                    0, 1,
-                    1, 1
-                ]).reshape(-1, 2),
+                        0, 0,
+                        0, 1,
+                        1, 1
+                    ]).reshape(-1, 2),
+                    }
+                    if self.style.has_texture else {}
+                ),
             },
             vertex_source="""
             #version 330 core
@@ -101,7 +105,7 @@ class MultiSpriteRender(GraphObject):
             
             void main() {{
             #if COLOR == 0
-                out_color = vec4(.5, .5, .2, 1.);
+                out_color = vec4(.8, 1., .8, 1.);
             #elif COLOR == 1
                 vec2 uv = v_uv * u_uv_scale_offset.xy + u_uv_scale_offset.zw;
                 out_color = texture(u_texture, uv);

@@ -57,7 +57,7 @@ class PolygonRender(GraphObject):
             
             void main() {{
             #if COLOR == 0
-                out_color = vec4(.5, .5, .2, 1.);
+                out_color = vec4(.8, 1., .8, 1.);
             #elif COLOR == 1
                 vec2 uv = v_uv * u_uv_scale_offset.xy + u_uv_scale_offset.zw;
                 out_color = texture(u_texture, uv);

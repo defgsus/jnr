@@ -12,6 +12,11 @@ class Space:
     # don't forget when working directly with pymunk objects !!
     S = 10
 
+    # pymunk.ShapeFilter categories
+    CAT_STATIC = 0b00000001
+    CAT_PLAYER = 0b00000010
+    CAT_OBJECT = 0b00000100
+
     def __init__(self):
         self.space = pymunk.Space(threaded=True)
         self.space.gravity = 0, -140
@@ -23,7 +28,8 @@ class Space:
         self.space.step(rs.dt)
 
     def add(self, obj: SpaceObject):
-        obj.add_to_space(self.space)
+        obj.space = self
+        obj.add_to_space()
         self.objects.append(obj)
 
     def create_graph_objects(self, scene: GraphScene):
@@ -32,9 +38,16 @@ class Space:
             if obj:
                 scene.add(obj)
 
-    def get_shape_at(self, pos: Tuple[int, int], r: float = 0.01):
+    def get_shapes_at(self, pos: Tuple[int, int]):
         x, y = pos
         x *= self.S
         y *= self.S
-        bb = pymunk.BB(left=x-r, top=y-r, right=x+r, bottom=y+r)
-        self.space.bb_query(bb)
+        print("QUERY", (x, y))
+        return self.space.point_query(
+            (x, y),
+            max_distance=0.,
+            shape_filter=pymunk.ShapeFilter(
+                categories=pymunk.ShapeFilter.ALL_CATEGORIES(),
+                mask=pymunk.ShapeFilter.ALL_MASKS(),
+            )
+        )
