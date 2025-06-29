@@ -24,7 +24,7 @@ class TileRender(GraphObject):
             mapping = {}
             for y in range(num_tiles[1]):
                 for x in range(num_tiles[0]):
-                    mapping[len(mapping) + 1] = x, y
+                    mapping[len(mapping) + 1] = x, num_tiles[1] - 1 - y
 
         grid = self.map.to_numpy()
         for y, row in enumerate(grid):
@@ -53,11 +53,12 @@ class TileRender(GraphObject):
                         [tx0, ty1],
                         [tx1, ty1],
                     ])
+        self.vertices = np.array(self.vertices).reshape(-1, 3)
 
     def initialize(self):
         self.vao = VertexArray(
-            self.vertices,
             attributes={
+                "vertex": self.vertices,
                 "uv": self.uv_coords,
             },
             vertex_source="""

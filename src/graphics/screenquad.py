@@ -18,15 +18,17 @@ class ScreenQuad(GraphObject):
 
     def initialize(self):
         self.vao = VertexArray(
-            [
-                -1, -1, 0,
-                1, -1, 0,
-                1, 1, 0.,
+            {
+                "vertex": np.array([
+                    -1, -1, 0,
+                    1, -1, 0,
+                    1, 1, 0.,
 
-                -1, -1, 0,
-                -1, 1, 0,
-                1, 1, 0,
-            ],
+                    -1, -1, 0,
+                    -1, 1, 0,
+                    1, 1, 0,
+                ]).reshape(-1, 3),
+            },
             """
             #version 330 core
             

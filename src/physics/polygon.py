@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional, Union
 import pymunk
 import numpy as np
 
-from src.graphics import RenderSettings, TiledTileset
+from src.graphics.rendersettings import RenderSettings
 from .space import Space
 from .spaceobject import SpaceObject
 from ..graphics.style import Style
@@ -40,7 +40,7 @@ class Polygon(SpaceObject):
         self.body.position = pymunk.Vec2d(*self.initial_position) * Space.S
         shape = pymunk.Poly(self.body, [(Space.S * v[0], Space.S * v[1]) for v in self.vertices])
         shape.friction = 1.
-        shape.density = 3
+        shape.density = 1
         shape.mass = mass
 
         self.space.add(self.body, shape)

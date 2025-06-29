@@ -23,6 +23,6 @@ class RenderSettings:
             shader["u_projection"].write(self.projection.flatten().astype("f4"))
 
     def init_gl_state(self):
-        self.gl.enable(self.gl.DEPTH_TEST)
+        self.gl.disable(self.gl.DEPTH_TEST)
         self.gl.enable(self.gl.BLEND)
         #self.gl.(self.gl.ONE_MINUS_SRC_ALPHA)

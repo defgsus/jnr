@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import pymunk
 
@@ -8,11 +8,13 @@ from .spaceobject import SpaceObject
 
 class Space:
 
+    # !! GLOBAL SCALE to make objects a bit more stable
+    # don't forget when working directly with pymunk objects !!
     S = 10
 
     def __init__(self):
         self.space = pymunk.Space(threaded=True)
-        self.space.gravity = 0, -90
+        self.space.gravity = 0, -140
         self.objects: List[SpaceObject] = []
 
     def step(self, rs: RenderSettings):
@@ -30,3 +32,9 @@ class Space:
             if obj:
                 scene.add(obj)
 
+    def get_shape_at(self, pos: Tuple[int, int], r: float = 0.01):
+        x, y = pos
+        x *= self.S
+        y *= self.S
+        bb = pymunk.BB(left=x-r, top=y-r, right=x+r, bottom=y+r)
+        self.space.bb_query(bb)

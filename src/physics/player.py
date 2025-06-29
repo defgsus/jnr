@@ -13,7 +13,7 @@ class Player(Polygon):
             self,
             position: Tuple[float, float] = (0, 0),
     ):
-        h = 1
+        h = .7
         w = h * 46 / 50
         super().__init__(
             vertices=[(-w, -h), (w, -h), (w, h), (-w, h)],

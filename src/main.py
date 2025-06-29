@@ -44,4 +44,3 @@ class Main:
                 self.running = False
             elif event.key == pygame.K_f:
                 pygame.display.toggle_fullscreen()
-

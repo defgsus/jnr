@@ -1,5 +1,6 @@
 from typing import List, Dict, Optional, Union, Tuple
 
+import numpy as np
 from scipy.spatial import Delaunay
 
 from .style import Style
@@ -24,8 +25,8 @@ class PolygonRender(GraphObject):
     def initialize(self):
         vertices = self.triangulate()
         self.vao = VertexArray(
-            vertices,
             attributes={
+                "vertex": vertices,
                 **({"uv": self.get_uv_choords(vertices)} if self.style.has_texture else {})
             },
             vertex_source="""
@@ -96,12 +97,9 @@ class PolygonRender(GraphObject):
         vertices = []
         for tri in triangles.simplices:
             for idx in tri:
-                vertices.extend(
-                    triangles.points[idx]
-                )
-                vertices.append(0)
+                vertices.append([*triangles.points[idx], 0])
 
-        return vertices
+        return np.array(vertices)
 
     def triangulate_circle(self, steps: int = 36):
         radius = self.polygon.radius
@@ -116,18 +114,16 @@ class PolygonRender(GraphObject):
             y1 = math.cos(t1) * radius
 
             vertices.extend([
-                0, 0, 0,
-                x0, y0, 0,
-                x1, y1, 0,
+                [0, 0, 0],
+                [x0, y0, 0],
+                [x1, y1, 0],
             ])
-        return vertices
+        return np.array(vertices)
 
-    def get_uv_choords(self, vertices: List[float]):
-        min_x, max_x = min(vertices[::3]), max(vertices[::3])
-        min_y, max_y = min(vertices[1::3]), max(vertices[1::3])
-        uvs = []
-        for x, y in zip(vertices[::3], vertices[1::3]):
-            u = (x - min_x) / (max_x - min_x)
-            v = (y - min_y) / (max_y - min_y)
-            uvs.append([u, v])
+    def get_uv_choords(self, vertices: np.ndarray):
+        min_x, max_x = vertices[:, 0].min(), vertices[:, 0].max()
+        min_y, max_y = vertices[:, 1].min(), vertices[:, 1].max()
+        uvs = vertices[:, :2].copy()
+        uvs[:, 0] = (uvs[:, 0] - min_x) / (max_x - min_x)
+        uvs[:, 1] = (uvs[:, 1] - min_y) / (max_y - min_y)
         return uvs

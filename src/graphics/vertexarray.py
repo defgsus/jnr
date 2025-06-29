@@ -2,7 +2,7 @@ import moderngl
 import numpy as np
 from typing import Union, Iterable, Optional, Dict
 
-from . import RenderSettings
+from .rendersettings import RenderSettings
 from .shadersource import preprocess_shader_source
 
 
@@ -15,27 +15,29 @@ class VertexArray:
 
     def __init__(
             self,
-            vertices: Union[Iterable[float], np.ndarray],
+            attributes: Dict[str, Union[Iterable[float], np.ndarray]],
             vertex_source: str,
             fragment_source: str,
-            attributes: Union[None, Dict[str, Union[Iterable[float], np.ndarray]]] = None,
     ):
-        if not isinstance(vertices, np.ndarray):
-            vertices = np.array(vertices)
-        self.vertices = vertices
+        """
+        :param attributes: something like:
+            {
+                "vertex": np.rand((100, 3)),
+                "uv": np.rand((100, 2)),
+            }
+        """
         self.vertex_source = vertex_source
         self.fragment_source = fragment_source
-        self.vbo: Optional[moderngl.Buffer] = None
         self.attributes: Dict[str, np.ndarray] = {}
-        self.attribute_vbos: Dict[str, moderngl.Buffer] = {}
+        self.vbos: Dict[str, moderngl.Buffer] = {}
         self.vao: Optional[moderngl.VertexArray] = None
-        if attributes:
-            for name, attr in attributes.items():
-                if attr is None:
-                    raise ValueError(f"'None' attribute name='{name}'")
-                if not isinstance(attr, np.ndarray):
-                    attr = np.array(attr)
-                self.attributes[name] = attr
+        self.program: Optional[moderngl.Program] = None
+        for name, attr in attributes.items():
+            if attr is None:
+                raise ValueError(f"'None' attribute name='{name}'")
+            if not isinstance(attr, np.ndarray):
+                attr = np.array(attr)
+            self.attributes[name] = attr
 
     def initialize(self, gl: moderngl.Context):
         self.gl = gl
@@ -43,23 +45,23 @@ class VertexArray:
             vertex_shader=preprocess_shader_source(self.vertex_source),
             fragment_shader=preprocess_shader_source(self.fragment_source),
         )
-        self.vbo = self.gl.buffer(self.vertices.astype('f4').tobytes())
-        attr_list = [(self.vbo, '3f', 'in_vertex')]
+        attr_list = []
         for name, attr in self.attributes.items():
-            self.attribute_vbos[name] = vbo = gl.buffer(attr.astype('f4').tobytes())
+            self.vbos[name] = vbo = gl.buffer(attr.astype('f4').tobytes())
             attr_list.append((vbo, f"{attr.shape[-1]}f", f"in_{name}"))
         self.vao = self.gl.vertex_array(self.program, attr_list)
 
     def release(self):
         if self.vao is not None:
             self.vao.release()
-            self.vbo.release()
+            for vbo in self.vbos.values():
+                vbo.release()
             self.program.release()
             self.vao = None
-            self.vbo = None
             self.program = None
+            self.vbos.clear()
 
-    def render(self, rs: RenderSettings, uniforms: Optional[dict] = None):
+    def render(self, rs: RenderSettings, uniforms: Optional[dict] = None, instances: int = -1):
         if self.vao is None:
             self.initialize(rs.gl)
 
@@ -67,4 +69,4 @@ class VertexArray:
         if uniforms:
             for key, value in uniforms.items():
                 self.program[key] = value
-        self.vao.render()
+        self.vao.render(instances=instances)
