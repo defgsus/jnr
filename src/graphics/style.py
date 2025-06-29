@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import moderngl
 import PIL.Image
@@ -13,9 +13,13 @@ class Style:
             self,
             texture_filename: Optional[str] = None,
             tileset_filename: Optional[str] = None,
+            show_rotation: bool = True,
+            scale: Tuple[float, float] = (1., 1.),
     ):
         self.texture_filename = texture_filename
         self.tileset_filename = tileset_filename
+        self.show_rotation = show_rotation
+        self.scale = scale
         self._tileset = None
         self._tileset_controller = None
 

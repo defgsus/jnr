@@ -36,6 +36,10 @@ class TimeThreshold:
                 self.active = False
                 self.blocked = True
 
+    def check_key_press(self, rs: RenderSettings, pressed: bool) -> bool:
+        self.step(rs)
+        self.set_active(rs, pressed)
+        return self.active
 
 class ValueScheduler:
 

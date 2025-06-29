@@ -1,5 +1,6 @@
 import pymunk
 
+from .shapesettings import ShapeSettings
 from .spaceobject import SpaceObject
 from .space import Space
 from src.maps.tiled import TiledMapLayer
@@ -11,7 +12,12 @@ class TileSpace(SpaceObject):
             self,
             map: TiledMapLayer,
     ):
-        super().__init__()
+        super().__init__(
+            shape_settings=ShapeSettings(
+                friction=10.,
+                static=True,
+            ),
+        )
         self.map = map
 
     def add_to_space(self):
@@ -33,11 +39,8 @@ class TileSpace(SpaceObject):
                             (wx+0*S, wy+1*S),
                         ]
                     )
-                    shape.friction = 1.
-                    shape.filter = pymunk.ShapeFilter(
-                        categories=Space.CAT_STATIC,
-                        mask=pymunk.ShapeFilter.ALL_MASKS(),
-                    )
+                    self.shape_settings.apply_to_shape(shape)
+
                     # print(shape.filter)
                     shapes.append(shape)
 

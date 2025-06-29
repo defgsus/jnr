@@ -87,12 +87,12 @@ class String(SpaceObject):
             #print("BODY", self.bodies[0].position)
             #print(self.sprite_render.locations)
 
-    def create_graph_object(self):
+    def create_graph_objects(self):
         from ..graphics import MultiSpriteRender
         self.sprite_render = MultiSpriteRender(
             num_sprites=len(self.init_positions),
             #style=Style(texture_filename="texture/tileset2x2.png"),
         )
-        return self.sprite_render
+        yield self.sprite_render
 
 

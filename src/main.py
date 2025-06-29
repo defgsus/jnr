@@ -48,5 +48,5 @@ class Main:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             #print(event)
             map_pos = self.world.screen_pos_to_map_pos(event.dict["pos"])
-            s = self.world.physics.get_shape_at(map_pos)
+            s = self.world.physics.get_shapes_at(map_pos)
             print("S", s)

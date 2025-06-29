@@ -20,6 +20,8 @@ class Space:
     def __init__(self):
         self.space = pymunk.Space(threaded=True)
         self.space.gravity = 0, -140
+        self.space.damping = 1
+        self.space.iterations = 30
         self.objects: List[SpaceObject] = []
 
     def step(self, rs: RenderSettings):
@@ -29,13 +31,16 @@ class Space:
 
     def add(self, obj: SpaceObject):
         obj.space = self
-        obj.add_to_space()
+        try:
+            obj.add_to_space()
+        except Exception as e:
+            e.args = (f"{e.args[0]}\nFor object: {obj}", *e.args[1:])
+            raise
         self.objects.append(obj)
 
     def create_graph_objects(self, scene: GraphScene):
         for space_obj in self.objects:
-            obj = space_obj.create_graph_object()
-            if obj:
+            for obj in space_obj.create_graph_objects():
                 scene.add(obj)
 
     def get_shapes_at(self, pos: Tuple[int, int]):

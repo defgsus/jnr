@@ -1,4 +1,5 @@
 import random
+from turtle import Shape
 from typing import Tuple
 
 import pygame
@@ -9,6 +10,7 @@ import numpy as np
 from src import physics, graphics
 from src.assets import assets
 from src.graphics import Style
+from src.physics.shapesettings import ShapeSettings
 
 
 class World:
@@ -38,7 +40,10 @@ class World:
                         (obj.x + obj.width, obj.y - obj.height),
                         (obj.x + obj.width, obj.y),
                     ],
-                    static=True,
+                    shape_settings=ShapeSettings(
+                        static=True,
+                    ),
+                    name=f"rect-from-map-{obj.id}"
                 ))
             elif obj.type == "string":
                 positions = []
@@ -48,14 +53,21 @@ class World:
                 self.physics.add(physics.String(positions))
 
         self.physics.add(self.player)
-        for i in range(20):
+        for i in range(50):
             self.physics.add(physics.Circle(
                 radius=random.uniform(0.1, .7),
-                position=(4+i%4, 20+i//4))
-            )
+                position=(4+i%4, 20+i//4),
+                shape_settings=ShapeSettings(
+                    elasticity=1.,
+                ),
+            ))
+
         self.physics.add(physics.Polygon(
-            vertices=[(-1000, -10), (1000, -10), (1000, 0), (-1000, -10)],
-            static=True,
+            vertices=[(-1000, -10), (1000, -10), (1000, 0), (-1000, 0)],
+            shape_settings=ShapeSettings(
+                static=True,
+            ),
+            name="big plane",
         ))
 
         self.graph_scene.add(
@@ -77,6 +89,7 @@ class World:
             style=Style(texture_filename="texture/tileset2x2.png"),
         )
         self.graph_scene.add(self.demo_sprites)
+
         self.physics.create_graph_objects(self.graph_scene)
 
     def step(self, rs: graphics.RenderSettings):
@@ -87,11 +100,13 @@ class World:
         elif keys[pygame.K_MINUS]:
             self.target_scale *= 1 + rs.dt
 
-        v = rs.dt * 10
+        v = rs.dt * 3
 
         difference = (pyrr.Vector3([*self.player.position, 0]) - self.translation)
         self.velocity += v * difference
-        self.scale += v * np.sum(np.abs(difference)).item()
+        dist = np.sum(np.abs(difference)).item()
+        dist = min(15, max(0, dist - 10))
+        self.scale += v * dist
         self.translation += self.velocity * v
         #print(self.translation)
         self.translation[2] = 0
@@ -100,9 +115,9 @@ class World:
         self.physics.step(rs)
 
         t = np.linspace(0, 2*np.pi, self.demo_sprites.num_sprites)
-        self.demo_sprites.locations[:, 0] = np.sin(t+rs.second) * 10
-        self.demo_sprites.locations[:, 1] = np.cos(t+rs.second*.618) * 10
-        self.demo_sprites.rotations = np.sin(t+rs.second)
+        #self.demo_sprites.locations[:, 0] = np.sin(t+rs.second) * 10
+        #self.demo_sprites.locations[:, 1] = np.cos(t+rs.second*.618) * 10
+        #self.demo_sprites.rotations = np.sin(t+rs.second)
 
         #self.demo_sprites.locations = np.random.rand(self.demo_sprites.num_sprites, 2) * 20
 

@@ -72,8 +72,15 @@ class PolygonRender(GraphObject):
         pos = self.polygon.position
 
         trans = pyrr.matrix44.create_from_translation((*pos, 0))
-        rot = pyrr.matrix44.create_from_z_rotation(-self.polygon.body.angle)
-        trans = pyrr.matrix44.multiply(rot, trans)
+        if self.style.show_rotation:
+            trans = pyrr.matrix44.multiply(
+                pyrr.matrix44.create_from_z_rotation(-self.polygon.body.angle),
+                trans
+            )
+        trans = pyrr.matrix44.multiply(
+            pyrr.matrix44.create_from_scale((*self.style.scale, 0)),
+            trans,
+        )
 
         uniforms = {
             "u_transformation": trans.flatten().astype("f4"),
