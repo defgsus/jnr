@@ -3,7 +3,7 @@ import pymunk
 from .shapesettings import ShapeSettings
 from .spaceobject import SpaceObject
 from .space import Space
-from src.maps.tiled import TiledMapLayer
+from src.maps.tiledmap import TiledMapLayer
 
 
 class TileSpace(SpaceObject):

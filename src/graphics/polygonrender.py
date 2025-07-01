@@ -1,7 +1,6 @@
 from typing import List, Dict, Optional, Union, Tuple
 
 import numpy as np
-from scipy.spatial import Delaunay
 
 from .style import Style
 from .graphobject import *
@@ -9,6 +8,7 @@ from .vertexarray import VertexArray
 from ..assets import assets
 from ..physics.polygon import Polygon
 from ..physics.circle import Circle
+from ..util import triangulate
 
 
 class PolygonRender(GraphObject):
@@ -98,20 +98,12 @@ class PolygonRender(GraphObject):
     def triangulate(self):
         if not isinstance(self.polygon, Polygon):
             return self.triangulate_circle()
-
-        triangles = Delaunay(
-            self.polygon.vertices
-        )
-
-        vertices = []
-        for tri in triangles.simplices:
-            for idx in tri:
-                vertices.append([*triangles.points[idx], 0])
-
-        return np.array(vertices)
+        return np.array(self.polygon.vertices)
+        #return triangulate(self.polygon.vertices)
 
     def triangulate_circle(self, steps: int = 36):
-        radius = self.polygon.radius
+        # TODO: hacky quickfix
+        radius = getattr(self.polygon, "radius1", None) or self.polygon.radius
 
         vertices = []
         for step in range(steps):

@@ -17,12 +17,14 @@ class Space:
     CAT_PLAYER = 0b00000010
     CAT_OBJECT = 0b00000100
 
-    def __init__(self):
+    def __init__(self, world: "World"):
+        from ..world import World
         self.space = pymunk.Space(threaded=True)
         self.space.gravity = 0, -300
         self.space.damping = 1
         self.space.iterations = 30
         self.objects: List[SpaceObject] = []
+        self.world: World = world
 
     def step(self, rs: RenderSettings):
         for obj in self.objects:

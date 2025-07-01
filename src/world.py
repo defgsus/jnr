@@ -4,20 +4,23 @@ from typing import Tuple
 
 import pygame
 import moderngl
+import pymunk
 import pyrr
 import numpy as np
 
 from src import physics, graphics
 from src.assets import assets
 from src.graphics import Style
+from src.maps.tiledmap import TiledMapObject
 from src.physics.shapesettings import ShapeSettings
+from src.util import triangulate
 
 
 class World:
 
     def __init__(self, screen: pygame.Surface):
         self.screen = screen
-        self.physics = physics.Space()
+        self.physics = physics.Space(self)
         self.graph_scene = graphics.GraphScene()
         self.gl = moderngl.get_context()
 
@@ -32,21 +35,11 @@ class World:
         for obj in self.demo_map.layers[1].objects:
             if obj.type == "player":
                 self.player = physics.Player(position=(obj.x, obj.y))
-            elif obj.type == "rect":
-                self.physics.add(physics.Polygon(
-                    [
-                        (obj.x, obj.y),
-                        (obj.x, obj.y - obj.height),
-                        (obj.x + obj.width, obj.y - obj.height),
-                        (obj.x + obj.width, obj.y),
-                    ],
-                    shape_settings=ShapeSettings(
-                        static=True,
-                    ),
-                    name=f"rect-from-map-{obj.id}"
-                ))
+            elif obj.type in ("rect", "polygon"):
+                poly = self.create_poly_from_tiledmap(obj)
+                self.physics.add(poly)
             elif obj.type == "enemy":
-                self.physics.add(physics.Enemy(position=obj.pos))
+                self.physics.add(self.create_enemy_from_tiledmap(obj))
             elif obj.type == "string":
                 positions = []
                 for i in range(10):
@@ -97,6 +90,56 @@ class World:
         self.graph_scene.add(self.demo_sprites)
 
         self.physics.create_graph_objects(self.graph_scene)
+
+    def create_poly_from_tiledmap(self, obj: TiledMapObject) -> physics.Polygon:
+        if obj.type == "rect":
+            vertices = [
+                (obj.x, obj.y),
+                (obj.x, obj.y - obj.height),
+                (obj.x + obj.width, obj.y - obj.height),
+                (obj.x + obj.width, obj.y),
+            ]
+        elif obj.world_polygon:
+            vertices = obj.world_polygon
+
+        else:
+            raise ValueError(f"Can't render {obj}")
+
+        vertices = triangulate(vertices)
+        print(vertices)
+        way_points = None
+        if way_name := obj.properties.get("way"):
+            way_obj = obj.layer.find_object_by_name(way_name)
+            if not way_obj:
+                raise ValueError(f"Way '{way_name}' not found for {obj}")
+            if not way_obj.world_polygon:
+                raise ValueError(f"Way '{way_name}' has no polygon")
+            way_points = way_obj.world_polygon
+            way_points = [pymunk.Vec2d(*p) - obj.pos for p in way_points]
+
+        return physics.Polygon(
+            vertices,
+            shape_settings=ShapeSettings(
+                static=bool(obj.properties.get("static")),
+                kinematic=bool(obj.properties.get("kinematic")),
+            ),
+            style=Style(
+                texture_filename=obj.properties.get("texture_filename"),
+            ),
+            name=f"poly-from-map-{obj.id}",
+            way_points=way_points,
+            way_speed=obj.properties.get("way_speed", 1.),
+            way_offset=obj.properties.get("way_offset", 0.),
+        )
+
+    def create_enemy_from_tiledmap(self, obj: TiledMapObject):
+        return physics.Enemy(
+            position=obj.pos,
+            radius1=obj.properties.get("radius1", .5),
+            radius2=obj.properties.get("radius2", .7),
+            radius3=obj.properties.get("radius3", .15),
+            num_feet=obj.properties.get("num_feet", 5),
+        )
 
     def step(self, rs: graphics.RenderSettings):
         keys = pygame.key.get_pressed()

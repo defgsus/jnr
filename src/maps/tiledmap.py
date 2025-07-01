@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Optional
 
 import numpy as np
+from pygame.draw import polygon
 
 
 class TiledMapObject:
@@ -11,6 +12,7 @@ class TiledMapObject:
         self.layer = layer
         self.map = layer.map
         self.id = data["id"]
+        self.name = data["name"]
         self.pixel_width = data["width"]
         self.pixel_height = data["height"]
         self.pixel_x = data["x"]
@@ -23,6 +25,16 @@ class TiledMapObject:
         self.pos = (self.x, self.y)
         self.width = self.pixel_width / self.map.tile_width
         self.height = self.pixel_height / self.map.tile_height
+        self.properties = {
+            p["name"]: p["value"]
+            for p in (data.get("properties") or [])
+        }
+        self.world_polygon = []
+        for p in (data.get("polygon") or []):
+            x, y = p["x"] / self.map.tile_width, p["y"] / self.map.tile_height
+            if "-up" in self.map.render_order:
+                y = -y
+            self.world_polygon.append((self.x + x, self.y + y))
 
 
 class TiledMapLayer:
@@ -67,6 +79,11 @@ class TiledMapLayer:
                 for obj in self.data["objects"]:
                     self._objects.append(TiledMapObject(self, obj))
         return self._objects
+
+    def find_object_by_name(self, name: str) -> Optional[TiledMapObject]:
+        for o in self.objects:
+            if o.name == name:
+                return o
 
 
 class TiledMap:

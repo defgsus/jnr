@@ -4,7 +4,7 @@ from typing import Dict, Any, Union
 import PIL.Image
 
 from src.graphics.tiledtileset import TiledTileset
-from src.maps.tiled import TiledMap
+from src.maps.tiledmap import TiledMap
 
 
 ASSET_PATH = Path(__file__).resolve().parent.parent / "assets"

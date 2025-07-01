@@ -6,7 +6,7 @@ import pymunk
 from .shapesettings import ShapeSettings
 from .spaceobject import SpaceObject
 from .space import Space
-from src.maps.tiled import TiledMapLayer
+from src.maps.tiledmap import TiledMapLayer
 from ..graphics import Style, MultiSpriteRender, RenderSettings
 from ..graphics.polygonrender import PolygonRender
 
@@ -19,6 +19,10 @@ class Enemy(SpaceObject):
             shape_settings: Optional[ShapeSettings] = None,
             style: Optional[Style] = None,
             name: Optional[str] = None,
+            radius1: float = .5,
+            radius2: float = .7,
+            radius3: float = .15,
+            num_feet: int = 5,
     ):
         super().__init__(
             shape_settings=shape_settings or ShapeSettings(
@@ -34,6 +38,10 @@ class Enemy(SpaceObject):
         self.feet_render: MultiSpriteRender = None
         self.feet: List[pymunk.Body] = []
         self.feet_joints: List[Tuple[pymunk.SlideJoint, float]] = []
+        self.radius1 = radius1
+        self.radius2 = radius2
+        self.radius3 = radius3
+        self.num_feet = num_feet
 
     @property
     def position(self) -> pymunk.Vec2d:
@@ -42,15 +50,11 @@ class Enemy(SpaceObject):
     def add_to_space(self):
         S = Space.S
         world_init_position = pymunk.Vec2d(*self.initial_position)
-        self.radius = .5
-        self.radius2 = .7
-        self.radius3 = .15
-        self.num_feet = 5
 
         objects = []
         self.body = pymunk.Body()
         self.body.position = world_init_position * S
-        self.shape = pymunk.Circle(self.body, self.radius * S)
+        self.shape = pymunk.Circle(self.body, self.radius1 * S)
         self.shape_settings.apply_to_shape(self.shape)
         objects.append(self.body)
         objects.append(self.shape)
@@ -70,7 +74,7 @@ class Enemy(SpaceObject):
             self.feet.append(body)
 
             for pos in (positions[0], positions[1]):
-                world_attach_pos = world_init_position + pos * self.radius * .9
+                world_attach_pos = world_init_position + pos * self.radius1 * .9
                 rest_length = world_foot_pos.get_distance(world_attach_pos) * S
                 joint = pymunk.SlideJoint(
                     body, self.body,
@@ -80,7 +84,6 @@ class Enemy(SpaceObject):
                 )
                 objects.append(joint)
                 self.feet_joints.append((joint, rest_length))
-
 
         self.space.space.add(*objects)
 
@@ -100,7 +103,8 @@ class Enemy(SpaceObject):
         #    imp = (0, 1.)
         #    self.body.apply_impulse_at_local_point(imp, (0, 0))
 
-        active_feet = int(rs.second * 5) % self.num_feet
+        direction = 1 if self.space.world.player.position.x > self.position.x else -1
+        active_feet = int(rs.second * 4 * direction) % self.num_feet
         for i, (joint, rest_length) in enumerate(self.feet_joints):
             new_len = rest_length
             if i // 2 == active_feet:

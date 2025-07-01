@@ -3,7 +3,7 @@ from typing import Tuple
 from .graphobject import *
 from .vertexarray import VertexArray
 from ..assets import assets
-from src.maps.tiled import TiledMapLayer
+from src.maps.tiledmap import TiledMapLayer
 
 
 class TileRender(GraphObject):

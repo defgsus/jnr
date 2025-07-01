@@ -1,1 +1,1 @@
-from .tiled import TiledMap, TiledMapLayer
+from .tiledmap import TiledMap, TiledMapLayer

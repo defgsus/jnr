@@ -10,6 +10,7 @@ import pygame
 from ..graphics import Style
 from ..timings import ValueScheduler, TimeThreshold
 from .space import Space
+from ..util import triangulate
 
 
 class Player(Polygon):
@@ -21,7 +22,7 @@ class Player(Polygon):
         h = .7
         w = h * 20 / 50
         super().__init__(
-            vertices=[(-w, -h), (w, -h), (w, h), (-w, h)],
+            vertices=triangulate([(-w, -h), (w, -h), (w, h), (-w, h)]),
             #vertices=[
             #    (np.sin(t) * h, np.cos(t) * h)
             #    for t in np.linspace(0, np.pi*2, 10)
