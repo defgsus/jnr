@@ -34,7 +34,7 @@ class Space:
         try:
             obj.add_to_space()
         except Exception as e:
-            e.args = (f"{e.args[0]}\nFor object: {obj}", *e.args[1:])
+            e.args = (f"{e.args[0] if e.args else ''}\nFor object: {obj}", *e.args[1:])
             raise
         self.objects.append(obj)
 

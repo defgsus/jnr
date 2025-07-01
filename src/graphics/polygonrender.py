@@ -48,7 +48,7 @@ class PolygonRender(GraphObject):
             #version 330 core
             #line 47
             
-            #define COLOR {1 if self.style.has_texture else 0}
+            #define COLOR {(2 if self.style.tileset else 1) if self.style.has_texture else 0}
             
             uniform sampler2D u_texture;
             uniform vec4 u_uv_scale_offset;
@@ -59,6 +59,8 @@ class PolygonRender(GraphObject):
             #if COLOR == 0
                 out_color = vec4(.8, 1., .8, 1.);
             #elif COLOR == 1
+                out_color = texture(u_texture, v_uv);
+            #elif COLOR == 2
                 vec2 uv = v_uv * u_uv_scale_offset.xy + u_uv_scale_offset.zw;
                 out_color = texture(u_texture, uv);
             #endif
@@ -94,7 +96,7 @@ class PolygonRender(GraphObject):
         self.vao.render(rs, uniforms=uniforms)
 
     def triangulate(self):
-        if isinstance(self.polygon, Circle):
+        if not isinstance(self.polygon, Polygon):
             return self.triangulate_circle()
 
         triangles = Delaunay(

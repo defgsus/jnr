@@ -45,6 +45,8 @@ class World:
                     ),
                     name=f"rect-from-map-{obj.id}"
                 ))
+            elif obj.type == "enemy":
+                self.physics.add(physics.Enemy(position=obj.pos))
             elif obj.type == "string":
                 positions = []
                 for i in range(10):

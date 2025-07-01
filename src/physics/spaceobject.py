@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple, Union
+from typing import Optional, List, Tuple, Union, Iterable
 
 import pymunk
 
@@ -30,14 +30,8 @@ class SpaceObject:
     def step(self, rs: RenderSettings):
         pass
 
-    def create_graph_objects(self) -> List["GraphObject"]:
+    def create_graph_objects(self) -> Iterable["GraphObject"]:
         return []
 
     def add_to_space(self):
         raise NotImplementedError
-
-
-
-
-
-

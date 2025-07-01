@@ -40,8 +40,8 @@
                  "type":"player",
                  "visible":true,
                  "width":0,
-                 "x":345.666666666667,
-                 "y":1830.66666666667
+                 "x":343.666666666667,
+                 "y":1801
                 }, 
                 {
                  "height":31.333333333333,
@@ -137,6 +137,54 @@
                  "width":0,
                  "x":1228.66666666667,
                  "y":1830.66666666667
+                }, 
+                {
+                 "height":0,
+                 "id":11,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":632,
+                 "y":1929
+                }, 
+                {
+                 "height":0,
+                 "id":12,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":809,
+                 "y":1913.33333333333
+                }, 
+                {
+                 "height":0,
+                 "id":13,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":453,
+                 "y":1732
+                }, 
+                {
+                 "height":0,
+                 "id":14,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":0,
+                 "x":453,
+                 "y":1732
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -145,7 +193,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":11,
+ "nextobjectid":15,
  "orientation":"orthogonal",
  "renderorder":"right-up",
  "tiledversion":"1.8.2",

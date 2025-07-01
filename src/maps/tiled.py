@@ -11,15 +11,16 @@ class TiledMapObject:
         self.layer = layer
         self.map = layer.map
         self.id = data["id"]
-        self.pixel_x = data["x"]
-        self.pixel_y = data["y"]
         self.pixel_width = data["width"]
         self.pixel_height = data["height"]
+        self.pixel_x = data["x"]
+        self.pixel_y = data["y"]
         self.type = data["type"]
         self.x = self.pixel_x / self.map.tile_width
         self.y = self.pixel_y / self.map.tile_height
         if "-up" in self.map.render_order:
             self.y = self.map.height - self.y
+        self.pos = (self.x, self.y)
         self.width = self.pixel_width / self.map.tile_width
         self.height = self.pixel_height / self.map.tile_height
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-up" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="11">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-up" width="128" height="128" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="13">
  <editorsettings>
   <export target="map128x128.json" format="json"/>
  </editorsettings>
@@ -140,7 +140,7 @@
   <object id="1" type="string" x="455.333" y="1790.33">
    <point/>
   </object>
-  <object id="2" type="player" x="345.667" y="1830.67">
+  <object id="2" type="player" x="343.667" y="1801">
    <point/>
   </object>
   <object id="3" type="rect" x="416" y="1969" width="63.3333" height="31.3333"/>
@@ -163,6 +163,12 @@
    <point/>
   </object>
   <object id="10" type="string" x="1228.67" y="1830.67">
+   <point/>
+  </object>
+  <object id="11" type="enemy" x="632" y="1929">
+   <point/>
+  </object>
+  <object id="12" type="enemy" x="809" y="1913.33">
    <point/>
   </object>
  </objectgroup>

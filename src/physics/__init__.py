@@ -1,4 +1,5 @@
 from .circle import Circle
+from .enemy import Enemy
 from .player import Player
 from .polygon import Polygon
 from .space import Space

@@ -125,7 +125,7 @@ class Player(Polygon):
         v = self.body.velocity
         self.body.velocity = (
             max(-max_v, min(max_v, v[0])),
-            max(-max_v, min(max_v*5, v[1])),
+            max(-max_v, min(max_v*2, v[1])),
         )
 
     def hit(self, dir_x: float):
